@@ -72,9 +72,14 @@ jobs:
           else
             TAG="nightly-${DATE}-${SHORTSHA}"
           fi
-          echo "tag=$TAG"        >> "$GITHUB_OUTPUT"
-          echo "tags=nightly, $TAG" >> "$GITHUB_OUTPUT"
-          echo "Resolved nightly tags: nightly, $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          # Output tags as separate lines
+          {
+            echo "tags<<EOF"
+            echo "nightly"
+            echo "$TAG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -86,7 +91,9 @@ jobs:
           containerfiles: |
             ./packages/web/infra/Containerfile
           image: ${{ env.REGISTRY_IMAGE }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            nightly
+            ${{ steps.meta.outputs.tag }}
           oci: true
           platforms: linux/amd64, linux/arm64
           labels: |
